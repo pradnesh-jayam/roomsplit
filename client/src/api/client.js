@@ -27,7 +27,11 @@ export async function apiRequest(endpoint, options = {}) {
 
   if (response.status === 401) {
     clearAccessToken();
-    window.location.href = '/login';
+    // Only redirect if we're on a protected page, not on login/register
+    const publicPaths = ['/login', '/register', '/'];
+    if (!publicPaths.includes(window.location.pathname)) {
+      window.location.href = '/login';
+    }
     throw new Error('Unauthorized');
   }
 
