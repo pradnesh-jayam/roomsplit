@@ -7,7 +7,7 @@ import {
 } from '../controllers/expenseController.js';
 import { authenticateToken } from '../middleware/auth.js';
 
-const router = express.Router();
+const router = express.Router({ mergeParams: true });
 
 router.use(authenticateToken);
 
