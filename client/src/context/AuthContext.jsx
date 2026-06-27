@@ -38,8 +38,22 @@ export function AuthProvider({ children }) {
     window.location.href = '/';
   }
 
+  async function login(email, password) {
+    const { login: apiLogin } = await import('../api/auth.js');
+    const data = await apiLogin(email, password);
+    setUser(data.user);
+    return data;
+  }
+
+  async function register(name, email, password) {
+    const { register: apiRegister } = await import('../api/auth.js');
+    const data = await apiRegister(name, email, password);
+    setUser(data.user);
+    return data;
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
+    <AuthContext.Provider value={{ user, loading, logout, login, register }}>
       {children}
     </AuthContext.Provider>
   );
