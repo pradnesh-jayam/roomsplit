@@ -9,6 +9,7 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Room from './pages/Room.jsx';
+import Join from './pages/Join.jsx';
 import './index.css';
 
 function ProtectedRoute({ children }) {
@@ -29,6 +30,7 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/join" element={<Join />} />
             <Route 
               path="/dashboard" 
               element={

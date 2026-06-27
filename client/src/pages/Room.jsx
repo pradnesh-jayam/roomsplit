@@ -9,6 +9,7 @@ import { generateUPILink } from '../utils/upi.js';
 import { calculateBalances, calculateSettlement } from '../utils/settlement.js';
 import DemoBanner from '../components/DemoBanner.jsx';
 import LoadingSkeleton from '../components/LoadingSkeleton.jsx';
+import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar } from 'recharts';
 
 export default function Room() {
   const { id } = useParams();
@@ -23,6 +24,8 @@ export default function Room() {
   const [balances, setBalances] = useState([]);
   const [settlement, setSettlement] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [expenseTitle, setExpenseTitle] = useState('');
@@ -121,6 +124,39 @@ export default function Room() {
     }
   }
 
+  async function handleCopyInviteLink() {
+    const inviteUrl = `${window.location.origin}/join?code=${room.inviteCode}`;
+    await navigator.clipboard.writeText(inviteUrl);
+    showToast('Invite link copied!', 'success');
+  }
+
+  function handleExportCSV() {
+    const headers = ['Date', 'Title', 'Category', 'Amount', 'Paid By'];
+    const rows = expenses.map(expense => [
+      formatDate(expense.date || expense.createdAt),
+      expense.title,
+      expense.category,
+      expense.amount.toFixed(2),
+      expense.paidBy?.name || 'Unknown'
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${room.name}_expenses.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('CSV exported successfully!', 'success');
+  }
+
   async function handleLeaveRoom() {
     if (!confirm('Are you sure you want to leave this room?')) return;
 
@@ -159,6 +195,28 @@ export default function Room() {
 
   const myBalance = balances.find(b => b.userId === user?.id)?.balance || 0;
 
+  const categoryData = expenses.reduce((acc, expense) => {
+    const existing = acc.find(item => item.name === expense.category);
+    if (existing) {
+      existing.value += expense.amount;
+    } else {
+      acc.push({ name: expense.category, value: expense.amount });
+    }
+    return acc;
+  }, []);
+
+  const monthlyData = expenses.reduce((acc, expense) => {
+    const date = new Date(expense.date || expense.createdAt);
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const existing = acc.find(item => item.month === monthKey);
+    if (existing) {
+      existing.amount += expense.amount;
+    } else {
+      acc.push({ month: monthKey, amount: expense.amount });
+    }
+    return acc;
+  }, []).sort((a, b) => a.month.localeCompare(b.month));
+
   return (
     <div className="min-h-screen bg-background pb-20">
       
@@ -169,7 +227,12 @@ export default function Room() {
           </button>
           <h1 className="text-lg font-bold">{room.name}</h1>
           <div className="flex items-center gap-2">
-            <span className="text-xs text-text-muted bg-card px-2 py-1 rounded">Code: {room.inviteCode}</span>
+            <button onClick={handleCopyInviteLink} className="text-xs text-text-muted bg-card px-2 py-1 rounded hover:bg-card/80">
+              📋 Share
+            </button>
+            <button onClick={handleExportCSV} className="text-xs text-text-muted bg-card px-2 py-1 rounded hover:bg-card/80">
+              📊 Export
+            </button>
             <button onClick={handleLeaveRoom} className="text-negative text-sm">
               Leave
             </button>
@@ -194,6 +257,14 @@ export default function Room() {
             }`}
           >
             Balances
+          </button>
+          <button
+            onClick={() => setActiveTab('analytics')}
+            className={`flex-1 px-4 py-3 text-center font-medium ${
+              activeTab === 'analytics' ? 'text-primary border-b-2 border-primary' : 'text-text-muted'
+            }`}
+          >
+            Analytics
           </button>
           <button
             onClick={() => setActiveTab('activity')}
@@ -310,6 +381,80 @@ export default function Room() {
                   </div>
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'analytics' && (
+            <div className="space-y-6">
+              <div className="p-4 bg-card rounded-lg">
+                <h3 className="font-semibold mb-4">Spending by Category</h3>
+                {categoryData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => formatCurrency(value)} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-center text-text-muted py-8">No data yet</p>
+                )}
+              </div>
+
+              <div className="p-4 bg-card rounded-lg">
+                <h3 className="font-semibold mb-4">Monthly Spending</h3>
+                {monthlyData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={monthlyData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => formatCurrency(value)} />
+                      <Line type="monotone" dataKey="amount" stroke="#8884d8" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-center text-text-muted py-8">No data yet</p>
+                )}
+              </div>
+
+              <div className="p-4 bg-card rounded-lg">
+                <h3 className="font-semibold mb-4">Top Spenders</h3>
+                <div className="space-y-2">
+                  {Object.entries(
+                    expenses.reduce((acc, expense) => {
+                      const paidBy = expense.paidBy?.name || 'Unknown';
+                      if (!acc[paidBy]) acc[paidBy] = 0;
+                      acc[paidBy] += expense.amount;
+                      return acc;
+                    }, {})
+                  )
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([name, amount], index) => (
+                      <div key={name} className="flex items-center justify-between p-3 bg-card rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold">
+                            {index + 1}
+                          </span>
+                          <span>{name}</span>
+                        </div>
+                        <span className="font-semibold">{formatCurrency(amount)}</span>
+                      </div>
+                    ))}
+                </div>
+              </div>
             </div>
           )}
 
