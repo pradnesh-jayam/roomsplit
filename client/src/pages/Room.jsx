@@ -77,9 +77,12 @@ export default function Room() {
 
     if (splitType === 'equal') {
       const share = amount / room.members.length;
-      splits = room.members.map(m => ({
-        userId: m.userId,
-        amount: Math.round(share * 100) / 100
+      const roundedShare = Math.round(share * 100) / 100;
+      const totalRounded = roundedShare * room.members.length;
+      const remainder = amount - totalRounded;
+      splits = room.members.map((m, i) => ({
+        userId: m.user?.id || m.userId,
+        amount: i === 0 ? roundedShare + remainder : roundedShare
       }));
     } else {
       const totalCustom = Object.values(customSplits).reduce((sum, val) => sum + (parseFloat(val) || 0), 0);
@@ -88,8 +91,8 @@ export default function Room() {
         return;
       }
       splits = room.members.map(m => ({
-        userId: m.userId,
-        amount: parseFloat(customSplits[m.userId]) || 0
+        userId: m.user?.id || m.userId,
+        amount: parseFloat(customSplits[m.user?.id || m.userId]) || 0
       }));
     }
 
@@ -158,7 +161,6 @@ export default function Room() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <DemoBanner />
       
       <nav className="px-4 py-4 border-b border-card">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
@@ -166,9 +168,12 @@ export default function Room() {
             ← Back
           </button>
           <h1 className="text-lg font-bold">{room.name}</h1>
-          <button onClick={handleLeaveRoom} className="text-negative text-sm">
-            Leave
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-text-muted bg-card px-2 py-1 rounded">Code: {room.inviteCode}</span>
+            <button onClick={handleLeaveRoom} className="text-negative text-sm">
+              Leave
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -416,13 +421,13 @@ export default function Room() {
               {splitType === 'custom' && (
                 <div className="space-y-2">
                   {room.members.map((member) => (
-                    <div key={member.userId} className="flex items-center gap-2">
-                      <span className="w-24 text-sm text-text-muted">{member.name}</span>
+                    <div key={member.user?.id || member.userId} className="flex items-center gap-2">
+                      <span className="w-24 text-sm text-text-muted">{member.user?.name || member.name}</span>
                       <input
                         type="number"
                         step="0.01"
-                        value={customSplits[member.userId] || ''}
-                        onChange={(e) => setCustomSplits({ ...customSplits, [member.userId]: e.target.value })}
+                        value={customSplits[member.user?.id || member.userId] || ''}
+                        onChange={(e) => setCustomSplits({ ...customSplits, [member.user?.id || member.userId]: e.target.value })}
                         className="flex-1 px-3 py-2 bg-card border border-card rounded-lg text-text-primary focus:outline-none focus:border-primary"
                         placeholder="0.00"
                       />
