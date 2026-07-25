@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = import.meta.env.VITE_API_URL || 'https://roomsplit-9f0g.onrender.com';
 
 let accessToken = localStorage.getItem('accessToken');
 let isRefreshing = false;
