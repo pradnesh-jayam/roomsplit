@@ -1,5 +1,5 @@
-import { getRoom, leaveRoom, getRoomSummary } from '../../server/src/controllers/roomController.js';
-import { authenticateToken } from '../../server/src/middleware/auth.js';
+import { getRoom, leaveRoom, getRoomSummary } from '../server-src/controllers/roomController.js';
+import { authenticateToken } from '../server-src/middleware/auth.js';
 
 export default async function handler(req, res) {
   try {

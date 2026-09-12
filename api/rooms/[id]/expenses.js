@@ -1,5 +1,5 @@
-import { getExpenses, createExpense, getExpenseCategories } from '../../../server/src/controllers/expenseController.js';
-import { authenticateToken } from '../../../server/src/middleware/auth.js';
+import { getExpenses, createExpense, getExpenseCategories } from '../../server-src/controllers/expenseController.js';
+import { authenticateToken } from '../../server-src/middleware/auth.js';
 
 export default async function handler(req, res) {
   try {

@@ -1,5 +1,5 @@
-import { getPayments, createPayment, getSettlement } from '../../../server/src/controllers/paymentController.js';
-import { authenticateToken } from '../../../server/src/middleware/auth.js';
+import { getPayments, createPayment, getSettlement } from '../../server-src/controllers/paymentController.js';
+import { authenticateToken } from '../../server-src/middleware/auth.js';
 
 export default async function handler(req, res) {
   try {

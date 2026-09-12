@@ -1,4 +1,4 @@
-import { logout } from '../../server/src/controllers/authController.js';
+import { logout } from '../server-src/controllers/authController.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

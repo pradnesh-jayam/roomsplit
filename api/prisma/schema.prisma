@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String    @id @default(cuid())
+  name             String
+  email            String    @unique
+  passwordHash     String
+  upiId            String?
+  createdAt        DateTime  @default(now())
+  rooms            RoomMember[]
+  paidExpenses     Expense[] @relation("PaidBy")
+  splits           ExpenseSplit[]
+  sentPayments     Payment[] @relation("Sender")
+  receivedPayments Payment[] @relation("Receiver")
+}
+
+model Room {
+  id         String       @id @default(cuid())
+  name       String
+  inviteCode String       @unique @default(cuid())
+  createdAt  DateTime     @default(now())
+  members    RoomMember[]
+  expenses   Expense[]
+  payments   Payment[]
+}
+
+model RoomMember {
+  id       String   @id @default(cuid())
+  userId   String
+  roomId   String
+  role     String   @default("member")
+  joinedAt DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id])
+  room     Room     @relation(fields: [roomId], references: [id])
+  @@unique([userId, roomId])
+}
+
+model Expense {
+  id        String         @id @default(cuid())
+  roomId    String
+  paidById  String
+  title     String
+  amount    Float
+  category  String         @default("general")
+  date      DateTime       @default(now())
+  createdAt DateTime       @default(now())
+  room      Room           @relation(fields: [roomId], references: [id])
+  paidBy    User           @relation("PaidBy", fields: [paidById], references: [id])
+  splits    ExpenseSplit[]
+}
+
+model ExpenseSplit {
+  id        String  @id @default(cuid())
+  expenseId String
+  userId    String
+  amount    Float
+  expense   Expense @relation(fields: [expenseId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+  @@unique([expenseId, userId])
+}
+
+model Payment {
+  id         String   @id @default(cuid())
+  roomId     String
+  senderId   String
+  receiverId String
+  amount     Float
+  note       String?
+  createdAt  DateTime @default(now())
+  room       Room     @relation(fields: [roomId], references: [id])
+  sender     User     @relation("Sender", fields: [senderId], references: [id])
+  receiver   User     @relation("Receiver", fields: [receiverId], references: [id])
+}

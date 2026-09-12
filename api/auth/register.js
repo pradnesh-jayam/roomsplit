@@ -1,4 +1,4 @@
-import { register } from '../../server/src/controllers/authController.js';
+import { register } from '../server-src/controllers/authController.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

@@ -1,5 +1,5 @@
-import { getMe, updateMe } from '../../server/src/controllers/authController.js';
-import { authenticateToken } from '../../server/src/middleware/auth.js';
+import { getMe, updateMe } from '../server-src/controllers/authController.js';
+import { authenticateToken } from '../server-src/middleware/auth.js';
 
 export default async function handler(req, res) {
   try {

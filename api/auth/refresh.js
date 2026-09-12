@@ -1,5 +1,5 @@
-import { refresh } from '../../server/src/controllers/authController.js';
-import { authenticateRefreshToken } from '../../server/src/middleware/auth.js';
+import { refresh } from '../server-src/controllers/authController.js';
+import { authenticateRefreshToken } from '../server-src/middleware/auth.js';
 import { cookie } from 'cookie';
 
 export default async function handler(req, res) {
