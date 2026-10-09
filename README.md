@@ -1,117 +1,83 @@
-# RoomSplit 💸
+# RoomSplit
 
-Smart expense splitter for college roommates. Split bills, track balances, and settle debts with minimum transactions via UPI.
+A full-stack expense-splitting app for roommates to record shared expenses, track balances, and coordinate repayments.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Try%20it-brightgreen)](https://roomsplit.vercel.app)
-[![CI](https://github.com/YOUR_USERNAME/roomsplit/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/roomsplit/actions)
+**[Live Demo](https://roomsplit-ochre.vercel.app)** · **[GitHub Repository](https://github.com/pradnesh-jayam/roomsplit)**
 
-> 👀 **[Try the live demo](https://roomsplit.vercel.app)** — click "Try Demo" on the landing page, no account needed.
+[![CI](https://github.com/pradnesh-jayam/roomsplit/actions/workflows/ci.yml/badge.svg)](https://github.com/pradnesh-jayam/roomsplit/actions/workflows/ci.yml)
 
 ## Features
-- Create rooms and invite flatmates via a shareable link
-- Add expenses with equal or custom splits
-- Minimum debt settlement algorithm (greedy, O(n log n))
-- One-tap UPI payment deep links — opens GPay / PhonePe directly
-- Installable as a mobile app (PWA)
+
+- Create rooms and invite members with a shareable link or invite code
+- Record expenses with equal or custom splits
+- View room balances and suggested debt settlements
+- Open UPI payment links for repayments
+- Install the app on supported devices as a Progressive Web App (PWA)
 
 ## Tech Stack
-- Frontend: React 18 + Vite + Tailwind CSS
-- Backend: Node.js + Express + Prisma ORM
-- Database: PostgreSQL
-- Auth: JWT (access + refresh token pattern)
-- Deployed: Vercel + Railway
+
+- **Frontend:** React, Vite, Tailwind CSS
+- **Backend:** Node.js, Express
+- **Database / ORM:** PostgreSQL, Prisma
+- **Authentication:** JWT access and refresh tokens
+- **Deployment:** Vercel (frontend), Render (backend)
 
 ## Project Structure
-```
+
+```text
 roomsplit/
-├── client/          # React frontend
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── api/
-│   │   ├── utils/
-│   │   └── context/
-│   └── public/
-├── server/          # Express backend
-│   ├── src/
-│   │   ├── routes/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   └── utils/
-│   └── prisma/
-└── .github/workflows/
+├── src/                 # Frontend source
+├── public/              # Static assets
+├── server/
+│   ├── src/             # Express API
+│   └── prisma/          # Prisma schema
+└── .github/workflows/   # GitHub Actions workflows
 ```
 
-## Getting Started
+## Run Locally
 
-### Prerequisites
-- Node.js 18+
-- PostgreSQL database
+**Prerequisites:** Node.js and a PostgreSQL database.
 
-### Setup
-1. Clone the repository
-2. Set up environment variables:
+1. Install frontend dependencies from the repository root:
+
    ```bash
-   cp .env.example .env
+   npm install
    ```
-3. Install dependencies:
-   ```bash
-   cd server && npm install
-   cd ../client && npm install
-   ```
-4. Set up database:
+
+2. Install backend dependencies:
+
    ```bash
    cd server
-   npx prisma migrate dev
+   npm install
    ```
-5. Run the servers:
+
+3. Configure the backend environment variables:
+
+   - `DATABASE_URL`
+   - `JWT_SECRET`
+   - `JWT_REFRESH_SECRET`
+   - `FRONTEND_URL`
+
+   Set `VITE_API_URL` for the frontend to point to your backend API.
+
+4. Configure the Prisma database schema for your local database. Then start the backend from `server/`:
+
    ```bash
-   # Terminal 1 - Backend
-   cd server && npm run dev
-
-   # Terminal 2 - Frontend
-   cd client && npm run dev
+   npm run dev
    ```
 
-## API Endpoints
+5. In a second terminal, start the frontend from the repository root:
 
-### Auth
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `POST /api/auth/refresh` - Refresh access token
-- `POST /api/auth/logout` - Logout user
-- `GET /api/auth/me` - Get current user
-- `PUT /api/auth/me` - Update user profile
+   ```bash
+   npm run dev
+   ```
 
-### Rooms
-- `POST /api/rooms` - Create room
-- `GET /api/rooms` - Get user's rooms
-- `GET /api/rooms/:id` - Get room details
-- `POST /api/rooms/join` - Join room via invite code
-- `DELETE /api/rooms/:id/leave` - Leave room
-- `GET /api/rooms/:id/summary` - Get balances and settlement
+Check the scripts in the root and `server/package.json` if your local setup uses different script names.
 
-### Expenses
-- `GET /api/rooms/:roomId/expenses` - Get room expenses
-- `POST /api/rooms/:roomId/expenses` - Add expense
-- `DELETE /api/rooms/:roomId/expenses/:expenseId` - Delete expense
+## Settlement Approach
 
-### Payments
-- `GET /api/rooms/:roomId/payments` - Get room payments
-- `POST /api/rooms/:roomId/payments` - Record payment
-- `GET /api/rooms/:roomId/payments/settlement` - Get settlement plan
+RoomSplit uses a greedy, sort-based approach to suggest transfers between members with positive and negative net balances. Sorting gives the settlement routine **O(n log n)** time complexity; the greedy approach does not guarantee the globally minimum possible number of transfers in every case.
 
-## Settlement Algorithm
-The app uses a greedy algorithm to minimize the number of transactions needed to settle all debts:
-1. Calculate net balance for each member
-2. Separate into creditors (positive balance) and debtors (negative balance)
-3. Match largest creditor with largest debtor iteratively
-4. Continue until all balances are settled
+## Usage Note
 
-Time complexity: O(n log n) due to sorting
-
-## Demo Mode
-Click "Try Demo" on the landing page to explore the app without creating an account. Demo mode uses pre-populated data and shows a warning banner indicating changes won't be saved.
-
-## License
-MIT
+The app has been tried by **more than 30 friends**, and **more than 10 rooms** have been created. Six supplied test cases were reported as passing.
