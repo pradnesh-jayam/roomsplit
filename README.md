@@ -4,7 +4,7 @@ A full-stack expense-splitting app for roommates to record shared expenses, trac
 
 **[Live Demo](https://roomsplit-ochre.vercel.app)** · **[GitHub Repository](https://github.com/pradnesh-jayam/roomsplit)**
 
-[![CI](https://github.com/pradnesh-jayam/roomsplit/actions/workflows/ci.yml/badge.svg)](https://github.com/pradnesh-jayam/roomsplit/actions/workflows/ci.yml)
+
 
 ## Features
 
